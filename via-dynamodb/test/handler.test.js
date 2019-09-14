@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk")
 AWS.config.region = "us-east-1"
 const Lambda = new AWS.Lambda()
-const then = require("../steps/then")
+const then = require("./steps/then")
 
 const functionName = "e2e-test-sns-kinesis-via-dynamodb-e2e-test-sut"
 
