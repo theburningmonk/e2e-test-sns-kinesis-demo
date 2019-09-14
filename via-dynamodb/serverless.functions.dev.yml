@@ -1,0 +1,12 @@
+sut:
+  handler: handler.sut
+  environment:
+    STREAM_NAME: !Ref KinesisStream
+    TOPIC_ARN: !Ref SnsTopic
+  iamRoleStatements:
+    - Effect: Allow
+      Action: kinesis:PutRecord
+      Resource: !GetAtt KinesisStream.Arn
+    - Effect: Allow
+      Action: sns:Publish
+      Resource: !Ref SnsTopic

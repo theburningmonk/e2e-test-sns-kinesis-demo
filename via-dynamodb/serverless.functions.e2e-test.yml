@@ -1,0 +1,48 @@
+sut:
+  handler: handler.sut
+  environment:
+    STREAM_NAME: !Ref KinesisStream
+    TOPIC_ARN: !Ref SnsTopic
+  iamRoleStatements:
+    - Effect: Allow
+      Action: kinesis:PutRecord
+      Resource: !GetAtt KinesisStream.Arn
+    - Effect: Allow
+      Action: sns:Publish
+      Resource: !Ref SnsTopic
+
+# test-only resource
+snsListener:
+  handler: listener.sns
+  condition: IsE2eTest
+  dependsOn:
+    - DynamoDB
+  environment:
+    TABLE_NAME: !Ref DynamoDB
+  events:
+    - sns:
+        arn: !Ref SnsTopic
+        topicName: e2e-test-topic
+  iamRoleStatementsName: e2e-test-via-dynamodb-snsListener-role
+  iamRoleStatements:
+    - Effect: Allow
+      Action: dynamodb:PutItem
+      Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-e2e-test-messages
+
+# test-only resource
+kinesisListener:
+  handler: listener.kinesis
+  condition: IsE2eTest
+  dependsOn:
+    - DynamoDB
+  environment:
+    TABLE_NAME: !Ref DynamoDB
+  events:
+    - stream:
+        type: kinesis
+        arn: !GetAtt KinesisStream.Arn
+  iamRoleStatementsName: e2e-test-via-dynamodb-kinesisListener-role
+  iamRoleStatements:
+    - Effect: Allow
+      Action: dynamodb:PutItem
+      Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-e2e-test-messages
