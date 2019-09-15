@@ -33,7 +33,6 @@ resources:
       Type: AWS::DynamoDB::Table
       Condition: IsE2eTest
       Properties:
-        TableName: ${self:service}-e2e-test-messages
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: id

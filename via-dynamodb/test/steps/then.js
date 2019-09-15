@@ -41,7 +41,7 @@ const messageIsPublishedToSns = async message => {
 		const matchingMessages = await findMessage(tableName, "sns", message)
 		expect(matchingMessages).toHaveLength(1)
 	}, {
-		retries: 10,
+		retries: 20,
 		factor: 1,
 		minTimeout: 1000,
 		onRetry: (err) => console.error(err)
@@ -55,7 +55,7 @@ const messageIsPublishedToKinesis = async message => {
 		const matchingMessages = await findMessage(tableName, "kinesis", message)
 		expect(matchingMessages).toHaveLength(1)
 	}, {
-		retries: 10,
+		retries: 20,
 		factor: 1,
 		minTimeout: 1000
 	})

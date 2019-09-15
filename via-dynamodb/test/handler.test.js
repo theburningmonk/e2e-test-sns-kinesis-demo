@@ -5,7 +5,7 @@ const then = require("./steps/then")
 
 const functionName = "e2e-test-sns-kinesis-via-dynamodb-e2e-test-sut"
 
-jest.setTimeout(10000)
+jest.setTimeout(20000)
 
 describe("e2e test via dynamodb", () => {
 	test("SUT publishes event to SNS & Kinesis", async () => {

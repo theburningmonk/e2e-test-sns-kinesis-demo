@@ -27,7 +27,7 @@ snsListener:
   iamRoleStatements:
     - Effect: Allow
       Action: dynamodb:PutItem
-      Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-e2e-test-messages
+      Resource: !GetAtt DynamoDB.Arn
 
 # test-only resource
 kinesisListener:
@@ -45,4 +45,4 @@ kinesisListener:
   iamRoleStatements:
     - Effect: Allow
       Action: dynamodb:PutItem
-      Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:service}-e2e-test-messages
+      Resource: !GetAtt DynamoDB.Arn
