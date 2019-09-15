@@ -8,7 +8,7 @@ const functionName = "e2e-test-sns-kinesis-via-apigw-e2e-test-sut"
 
 jest.setTimeout(20000)
 
-describe("e2e test via dynamodb", () => {
+describe("e2e test via api gateway websockets", () => {
 	beforeAll(async () => {
 		await websocket.connect()
 	})
