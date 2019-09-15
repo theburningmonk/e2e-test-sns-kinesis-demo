@@ -1,0 +1,50 @@
+service: e2e-test-sns-kinesis-via-apigw
+
+plugins:
+  - serverless-iam-roles-per-function
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+
+functions:
+  ${file(serverless.functions.${opt:stage}.yml)}
+  
+resources:
+  Conditions:
+    IsE2eTest: 
+      Fn::Equals:
+        - ${opt:stage}
+        - e2e-test
+
+  Resources:
+    KinesisStream:
+      Type: AWS::Kinesis::Stream
+      Properties: 
+        ShardCount: 1
+
+    SnsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: e2e-test-topic
+
+    DynamoDB:
+      Type: AWS::DynamoDB::Table
+      Condition: IsE2eTest
+      Properties:
+        TableName: ${self:service}-websocket-connections
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+
+  Outputs:
+    SnsTopicArn:
+      Value: !Ref SnsTopic
+    
+    KinesisStreamName:
+      Value: !Ref KinesisStream

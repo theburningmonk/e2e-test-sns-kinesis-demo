@@ -1,0 +1,81 @@
+sut:
+  handler: handler.sut
+  environment:
+    STREAM_NAME: !Ref KinesisStream
+    TOPIC_ARN: !Ref SnsTopic
+  iamRoleStatements:
+    - Effect: Allow
+      Action: kinesis:PutRecord
+      Resource: !GetAtt KinesisStream.Arn
+    - Effect: Allow
+      Action: sns:Publish
+      Resource: !Ref SnsTopic
+
+# test-only resource
+snsListener:
+  handler: listener.sns
+  condition: IsE2eTest
+  dependsOn:
+    - DynamoDB
+  environment:
+    TABLE_NAME: !Ref DynamoDB
+    ENDPOINT: "#{WebsocketsApi}.execute-api.#{AWS::Region}.amazonaws.com/${opt:stage}"
+  events:
+    - sns:
+        arn: !Ref SnsTopic
+        topicName: e2e-test-topic
+  iamRoleStatementsName: e2e-test-via-apigateway-snsListener
+  iamRoleStatements:
+    - Effect: Allow
+      Action: dynamodb:Scan
+      Resource: !GetAtt DynamoDB.Arn
+    - Effect: Allow
+      Action: execute-api:ManageConnections
+      Resource: arn:aws:execute-api:us-east-1:#{AWS::AccountId}:#{WebsocketsApi}/${opt:stage}/POST/@connections/*
+
+# test-only resource
+kinesisListener:
+  handler: listener.kinesis
+  condition: IsE2eTest
+  dependsOn:
+    - DynamoDB
+  environment:
+    TABLE_NAME: !Ref DynamoDB
+    ENDPOINT: "#{WebsocketsApi}.execute-api.#{AWS::Region}.amazonaws.com/${opt:stage}"
+  events:
+    - stream:
+        type: kinesis
+        arn: !GetAtt KinesisStream.Arn
+  iamRoleStatementsName: e2e-test-via-apigateway-kinesisListener
+  iamRoleStatements:
+    - Effect: Allow
+      Action: dynamodb:Scan
+      Resource: !GetAtt DynamoDB.Arn
+    - Effect: Allow
+      Action: execute-api:ManageConnections
+      Resource: arn:aws:execute-api:us-east-1:#{AWS::AccountId}:#{WebsocketsApi}/${opt:stage}/POST/@connections/*
+
+# test-only resource
+connectHandler:
+  handler: websocket.connect
+  environment:
+    TABLE_NAME: !Ref DynamoDB
+  events:
+    - websocket: $connect
+  iamRoleStatementsName: e2e-test-via-apigateway-connect
+  iamRoleStatements:
+    - Effect: Allow
+      Action: dynamodb:PutItem
+      Resource: !GetAtt DynamoDB.Arn
+
+disconnectHandler:
+  handler: websocket.disconnect
+  environment:
+    TABLE_NAME: !Ref DynamoDB
+  events:
+    - websocket: $disconnect
+  iamRoleStatementsName: e2e-test-via-apigateway-disconnect
+  iamRoleStatements:
+    - Effect: Allow
+      Action: dynamodb:DeleteItem
+      Resource: !GetAtt DynamoDB.Arn
