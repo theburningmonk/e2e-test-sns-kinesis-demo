@@ -33,6 +33,7 @@ resources:
 
     SqsQueue:
       Type: AWS::SQS::Queue
+      Condition: IsE2eTest
     
     SqsQueuePolicy:
       Type: AWS::SQS::QueuePolicy
