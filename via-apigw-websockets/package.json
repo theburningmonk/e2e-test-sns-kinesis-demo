@@ -5,6 +5,10 @@
   "description": "",
   "main": "handler.js",
   "scripts": {
+    "deploy:dev": "sls deploy -s dev",
+    "remove:dev": "sls remove -s dev",
+    "deploy:e2e": "sls deploy -s e2e-test",
+    "remove:e2e": "sls remove -s e2e-test",
     "test": "jest",
     "lint": "eslint ."
   },
