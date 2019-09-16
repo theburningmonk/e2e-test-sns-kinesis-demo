@@ -1,0 +1,38 @@
+service: e2e-test-kinesis-via-polling
+
+plugins:
+  - serverless-iam-roles-per-function
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+
+functions:
+  sut:
+    handler: handler.sut
+    environment:
+      STREAM_NAME: !Ref KinesisStream
+    iamRoleStatements:
+      - Effect: Allow
+        Action: kinesis:PutRecord
+        Resource: !GetAtt KinesisStream.Arn
+  
+resources:
+  Resources:
+    KinesisStream:
+      Type: AWS::Kinesis::Stream
+      Properties: 
+        ShardCount: 1
+
+    SnsTopic:
+      Type: AWS::SNS::Topic      
+      Properties:
+        TopicName: e2e-test-topic
+
+  Outputs:
+    SnsTopicArn:
+      Value: !Ref SnsTopic
+    
+    KinesisStreamName:
+      Value: !Ref KinesisStream
