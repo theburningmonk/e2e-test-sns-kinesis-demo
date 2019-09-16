@@ -1,0 +1,69 @@
+service: e2e-test-sns-via-sqs
+
+plugins:
+  - serverless-iam-roles-per-function
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+
+functions:
+  sut:
+    handler: handler.sut
+    environment:
+      TOPIC_ARN: !Ref SnsTopic
+    iamRoleStatements:
+      - Effect: Allow
+        Action: sns:Publish
+        Resource: !Ref SnsTopic
+  
+resources:
+  Conditions:
+    IsE2eTest: 
+      Fn::Equals:
+        - ${opt:stage}
+        - e2e-test
+
+  Resources:
+    SnsTopic:
+      Type: AWS::SNS::Topic      
+      Properties:
+        TopicName: e2e-test-topic
+
+    SqsQueue:
+      Type: AWS::SQS::Queue
+    
+    SqsQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Condition: IsE2eTest
+      Properties:
+        Queues:
+          - !Ref SqsQueue
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Principal: "*"
+            Action: SQS:SendMessage
+            Resource: !GetAtt SqsQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref SnsTopic
+            
+    SnsSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        Endpoint: !GetAtt SqsQueue.Arn
+        RawMessageDelivery: true
+        Region: "#{AWS::Region}"
+        TopicArn: !Ref SnsTopic
+
+  Outputs:
+    SnsTopicArn:
+      Value: !Ref SnsTopic
+
+    QueueUrl:
+      Condition: IsE2eTest
+      Value: !Ref SqsQueue
