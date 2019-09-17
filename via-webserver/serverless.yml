@@ -1,0 +1,30 @@
+service: e2e-test-sns-via-webserver
+
+plugins:
+  - serverless-iam-roles-per-function
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+
+functions:
+  sut:
+    handler: handler.sut
+    environment:
+      TOPIC_ARN: !Ref SnsTopic
+    iamRoleStatements:
+      - Effect: Allow
+        Action: sns:Publish
+        Resource: !Ref SnsTopic
+  
+resources:
+  Resources:
+    SnsTopic:
+      Type: AWS::SNS::Topic      
+      Properties:
+        TopicName: e2e-test-topic
+
+  Outputs:
+    SnsTopicArn:
+      Value: !Ref SnsTopic
