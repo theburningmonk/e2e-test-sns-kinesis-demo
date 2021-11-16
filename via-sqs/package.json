@@ -16,7 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.523.0"
+    "aws-sdk": "^2.814.0"
   },
   "devDependencies": {
     "async-retry": "^1.2.3",
